@@ -30,7 +30,6 @@ const isAdmin = asyncHandler((req, res, next) => {
         })
     next()
 })
-
 module.exports = {
     verifyAccessToken,
     isAdmin
