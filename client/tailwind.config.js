@@ -38,6 +38,27 @@ module.exports = {
             transform: 'translateY(0px);'
           }
         },
+        'slide-top-sm': {
+          '0%': {
+            '-webkit-transform': ' translateY(8px);',
+            transform: 'translateY(8px);'
+          },
+          '100%': {
+            '-webkit-transform': 'translateY(0px);',
+            transform: 'translateY(0px);'
+          }
+        },
+        'slide-right': {
+          '0%': {
+            '-webkit-transform': 'translateX(-1000px);',
+            transform: 'translateX(-1000px);'
+          },
+          '100%': {
+            '-webkit-transform': 'translateX(0);',
+            transform: 'translateX(0);'
+          }
+
+        }
 
       },
       animation: {

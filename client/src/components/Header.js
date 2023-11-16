@@ -27,7 +27,6 @@ export default function Header() {
                     </span>
                     <span>Online Support 24/7</span>
                 </div>
-
             </div>
         </div>
     )

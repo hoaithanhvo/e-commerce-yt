@@ -13,8 +13,8 @@ const CustomSlider = ({ product, activedTab }) => {
     return (
         <>
             {product && <Slider {...settings}>
-                {product?.map(el => (
-                    <Product key={el.id} pic={el.id} productData={el} isNew={activedTab === 1 ? false : true} />
+                {product?.map((el, index) => (
+                    <Product key={index} pic={el.id} productData={el} isNew={activedTab === 1 ? false : true} />
                 ))}
             </Slider>}
         </>
