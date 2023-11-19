@@ -14,16 +14,9 @@ export const userSlice = createSlice({
     },
     reducers: {
         login: (state, action) => {
-            console.log(action);
             state.isLoggedIn = action.payload.isLoggedIn
-            state.current = action.payload.userData
             state.token = action.payload.token
-
         },
-        // login: (state, action) => {
-        //     state.isLoggedIn = action.payload.isLoggedIn
-        //     state.token = action.payload.token
-        // },
         logout: (state, action) => {
             state.isLoggedIn = false
             state.current = null
@@ -63,6 +56,6 @@ export const userSlice = createSlice({
         });
     }
 })
-export const { login, logout, clearMessage, updateCart, register } = userSlice.actions
+export const { login, logout, clearMessage, updateCart } = userSlice.actions
 
 export default userSlice.reducer

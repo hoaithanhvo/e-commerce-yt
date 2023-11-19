@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import path from "../ultils/path"
 import { useSelector, useDispatch } from 'react-redux'
 import { getCurrent } from '../store/user/asyncActions'
 import { logout, clearMessage } from '../store/user/userSlice'
+import Swal from 'sweetalert2'
 
 import icons from '../ultils/icons'
 
@@ -11,13 +12,25 @@ const { AiOutlineLogout } = icons
 
 const TopHeader = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     // const navigate = useNavigate()
     const { isLoggedIn, current, mes } = useSelector(state => state.user)
     useEffect(() => {
-        if (isLoggedIn) dispatch(getCurrent())
+        const setTimeoutId = setTimeout(() => {
+            if (isLoggedIn) dispatch(getCurrent())
+        }, 300)
 
+        return () => {
+            clearTimeout(setTimeoutId)
+        }
     }, [dispatch, isLoggedIn])
-
+    useEffect(() => {
+        if (mes) Swal.fire('Oops!', mes, 'info').then(() => {
+            dispatch(clearMessage())
+            navigate(`/${path.LOGIN}`)
+        })
+    }, [mes])
+    console.log(current);
     return (
         <div className='h-[38px] w-full bg-main flex items-center justify-center'>
             <div className='w-main flex items-center justify-between text-xs text-white'>

@@ -3,7 +3,7 @@ import { Header, Banner, Navigation, Sidebar, BestSeller, DealDaily, FeatureProd
 import { apiGetProducts } from "../../apis/index"
 import Slider from 'react-slick'
 import { useDispatch, useSelector } from 'react-redux'
-import icons from '../../ultils/icons'
+import icons from 'ultils/icons'
 
 const { IoIosArrowForward } = icons
 
@@ -41,10 +41,10 @@ const Home = () => {
                 <FeatureProduct />
             </div>
             <div className='my-8 w-main m-auto'>
-                <h3 className='text-[20px] font-semibold py-[15px] border-b-2 border-main'>NEW ARRIVALffS</h3>
+                <h3 className='text-[20px] font-semibold py-[15px] border-b-2 border-main'>NEW ARRIVAL</h3>
                 <div className='mt-4 mx-[-10px]'>
                     <CustomSlider
-                        product={newProducts}
+                        products={newProducts}
                     />
 
                 </div>

@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
 import Slider from 'react-slick'
+import { Product } from '../components'
 
-import { Product } from "./"
 const settings = {
     dots: false,
     infinite: false,
@@ -9,12 +9,19 @@ const settings = {
     slidesToShow: 3,
     slidesToScroll: 1
 };
-const CustomSlider = ({ product, activedTab }) => {
+const CustomSlider = ({ products, activedTab, normal }) => {
+    console.log(products);
     return (
         <>
-            {product && <Slider {...settings}>
-                {product?.map((el, index) => (
-                    <Product key={index} pic={el.id} productData={el} isNew={activedTab === 1 ? false : true} />
+            {products && <Slider className='custom-slider' {...settings}>
+                {products?.map((el, index) => (
+                    <Product
+                        key={index}
+                        pid={el.id}
+                        productData={el}
+                        isNew={activedTab === 1 ? false : true}
+                        normal={normal}
+                    />
                 ))}
             </Slider>}
         </>

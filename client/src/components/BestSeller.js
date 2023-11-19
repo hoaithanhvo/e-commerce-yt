@@ -57,7 +57,7 @@ const BestSeller = () => {
                 ))}
             </div>
             <div className='mt-4 mx-[10px]'>
-                <CustomSlider product={products} activedTab={activedTab} />
+                <CustomSlider products={products} activedTab={activedTab} />
             </div>
             <div className='w-full flex gap-4 mt-4'>
                 <img
