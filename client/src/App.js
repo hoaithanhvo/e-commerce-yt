@@ -7,7 +7,7 @@ import {
   Services,
   DetailProduct,
   FAQ,
-  Blogs, FinalRegister, ResetPassword, Products
+  Blogs, FinalRegister, ResetPassword, Products, DetailCart
 
 } from './pages/public'
 import {
@@ -49,6 +49,7 @@ function App() {
       </div>}
       {isShowModal && <Modal>{modalChildren}</Modal>}
       <Routes>
+        <Route path={path.CHECKOUT} element={<Checkout />} />
         <Route path={path.PUBLIC} element={<Public />} >
           <Route path={path.HOME} element={<Home />} />
           <Route path={path.BLOGS} element={<Blogs />} />
@@ -69,7 +70,7 @@ function App() {
         </Route>
         <Route path={path.MEMBER} element={<MemberLayout />}>
           <Route path={path.MyCart} element={<MyCart />} />
-          {/* <Route path={path.MY_CART} element={<DetailCart />} /> */}
+          <Route path={path.MY_CART} element={<DetailCart />} />
           {/* <Route path={path.WISHLIST} element={<Wishlist />} /> */}
           {/* <Route path={path.HISTORY} element={<History />} /> */}
         </Route>
