@@ -18,11 +18,21 @@ import {
   CreateProducts,
   Dashboard
 } from './pages/admin'
+import {
+  MemberLayout,
+  Personal,
+  History,
+  MyCart,
+  Wishlist,
+  Checkout
+} from 'pages/member'
+import { Cart } from 'components'
 import path from './ultils/path';
 import { getCategories } from './store/app/asynAction'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
+import { showCart } from 'store/app/appSlice';
 
 import { Modal } from './components'
 function App() {
@@ -34,6 +44,9 @@ function App() {
   const { isShowModal, modalChildren, isShowCart } = useSelector(state => state.app)
   return (
     <div className="text-[30px] font-main">
+      {isShowCart && <div onClick={() => dispatch(showCart())} className='absolute inset-0 bg-overlay z-50 flex justify-end'>
+        <Cart />
+      </div>}
       {isShowModal && <Modal>{modalChildren}</Modal>}
       <Routes>
         <Route path={path.PUBLIC} element={<Public />} >
@@ -53,6 +66,12 @@ function App() {
           <Route path={path.MANAGE_PRODUCTS} element={<ManageProducts />} />
           <Route path={path.MANAGE_USER} element={<ManageUser />} />
           <Route path={path.CREATE_PRODUCTS} element={<CreateProducts />} />
+        </Route>
+        <Route path={path.MEMBER} element={<MemberLayout />}>
+          <Route path={path.MyCart} element={<MyCart />} />
+          {/* <Route path={path.MY_CART} element={<DetailCart />} /> */}
+          {/* <Route path={path.WISHLIST} element={<Wishlist />} /> */}
+          {/* <Route path={path.HISTORY} element={<History />} /> */}
         </Route>
         <Route path={path.FINAL_REGISTER} element={<FinalRegister />} />
         <Route path={path.LOGIN} element={<Login />} />

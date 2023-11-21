@@ -6,6 +6,8 @@ const sendMail = require('../ultils/sendMail')
 const crypto = require('crypto')
 const makeToken = require('uniqid')
 const { log } = require('console')
+const { users } = require('../ultils/constant')
+
 
 
 // const register = asyncHandler(async (req, res) => {
@@ -38,35 +40,36 @@ const register = asyncHandler(async (req, res) => {
     if (user) throw new Error('User has existed')
     else {
         const token = makeToken()
-        res.cookie('dataregister', { ...req.body, token }, { httpOnly: true, maxAge: 15 * 60 * 1000 })
-        const html = `Xin vui lòng click vào link dưới đây để hoàn tất quá trình đăng kí của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ.
-        <a href=${process.env.URL_SERVER}/api/user/finalregister/${token}>Click here</a>`
-        await sendMail({ email, html, subject: "Hoàn tất" })
+        const emailedited = btoa(email) + '@' + token
+        const newUser = await User.create({
+            email: emailedited, password, firstname, lastname, mobile
+        })
+        if (newUser) {
+            const html = `<h2>Register code:</h2><br /><blockquote>${token}</blockquote>`
+            await sendMail({ email, html, subject: 'Confirm register account in Digital World' })
+        }
+        setTimeout(async () => {
+            await User.deleteOne({ email: emailedited })
+        }, [300000])
+
         return res.json({
-            success: true,
-            mes: 'Please check your email to active account'
+            success: newUser ? true : false,
+            mes: newUser ? 'Please check your email to active account' : 'Some went wrong, please try later'
         })
     }
 })
 const finalRegister = asyncHandler(async (req, res) => {
-    const cookie = req.cookies
+    // const cookie = req.cookies
     const { token } = req.params
-    console.log(token);
-    console.log(cookie);
-    if (!cookie || cookie?.dataregister?.token !== token) {
-        res.clearCookie('dataregister')
-        return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`)
+    const notActivedEmail = await User.findOne({ email: new RegExp(`${token}$`) })
+    if (notActivedEmail) {
+        notActivedEmail.email = atob(notActivedEmail?.email?.split('@')[0])
+        notActivedEmail.save()
     }
-    const newUser = await User.create({
-        email: cookie?.dataregister?.email,
-        password: cookie?.dataregister?.password,
-        mobile: cookie?.dataregister?.mobile,
-        firstname: cookie?.dataregister?.firstname,
-        lastname: cookie?.dataregister?.lastname,
+    return res.json({
+        success: notActivedEmail ? true : false,
+        mes: notActivedEmail ? 'Register is Successfully. Please go login.' : 'Some went wrong, please try later'
     })
-    res.clearCookie('dataregister')
-    if (newUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`)
-    else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`)
 })
 // Refresh token => Cấp mới access token
 // Access token => Xác thực người dùng, quân quyên người dùng
@@ -101,7 +104,13 @@ const login = asyncHandler(async (req, res) => {
 })
 const getCurrent = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const user = await User.findById(_id).select('-refreshToken -password -role')
+    const user = await User.findById(_id).select('-refreshToken -password').populate({
+        path: 'cart',
+        populate: {
+            path: 'product',
+            select: 'title thumb price'
+        }
+    })
     return res.status(200).json({
         success: user ? true : false,
         rs: user ? user : 'User not found'
@@ -189,21 +198,68 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 
 const getUsers = asyncHandler(async (req, res) => {
-    const response = await User.find().select('-refreshToken -password -role')
-    return res.status(200).json({
-        success: response ? true : false,
-        users: response
-    })
-})
+    try {
+        const queries = { ...req.query }
+        // Tách các trường đặc biệt ra khỏi query
+        const excludeFields = ['limit', 'sort', 'page', 'fields']
+        excludeFields.forEach(el => delete queries[el])
+
+        // Format lại các operators cho đúng cú pháp mongoose
+        let queryString = JSON.stringify(queries)
+        queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, macthedEl => `$${macthedEl}`)
+        const formatedQueries = JSON.parse(queryString)
+        let colorQueryObject = {}
+        if (queries?.name) formatedQueries.name = { $regex: queries.name, $options: 'i' }
+
+        if (req.query.q) {
+            delete formatedQueries.q
+            formatedQueries['$or'] = [
+                { firstname: { $regex: req.query.q, $options: 'i' } },
+                { lastname: { $regex: req.query.q, $options: 'i' } },
+                { email: { $regex: req.query.q, $options: 'i' } },
+            ]
+        }
+        let queryCommand = User.find(formatedQueries)
+
+        // Sorting
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' ')
+            queryCommand = queryCommand.sort(sortBy)
+        }
+
+        // Fields limiting 
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ')
+            queryCommand = queryCommand.select(fields)
+        }
+
+        // Pagination phân trang 
+        const page = +req.query.page || 1
+        const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
+        const skip = (page - 1) * limit
+        queryCommand.skip(skip).limit(limit)
+
+        // Execute query
+        const response = await queryCommand.exec();
+        const counts = await User.countDocuments(formatedQueries);
+
+        res.status(200).json({
+            success: response ? true : false,
+            counts,
+            users: response ? response : 'Cannot get products',
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 
 const deleteUsers = asyncHandler(async (req, res) => {
-    const { _id } = req.query
-    if (!_id) throw new Error("Miss inputs")
-    const response = await User.findByIdAndDelete(_id)
+    const { uid } = req.params
+    const response = await User.findByIdAndDelete(uid)
     return res.status(200).json({
         success: response ? true : false,
-        deleteUsers: response ? `User with email ${response.email} deleted` : 'No user delete'
+        mes: response ? `User with email ${response.email} deleted` : 'No user delete'
     })
 })
 const updateUsers = asyncHandler(async (req, res) => {
@@ -221,7 +277,7 @@ const updateUsersByAdmin = asyncHandler(async (req, res) => {
     const response = await User.findByIdAndUpdate(uid, req.body, { new: true }).select('-password -role -refreshToken')
     return res.status(200).json({
         success: response ? true : false,
-        updateUser: response ? response : 'No user update'
+        mes: response ? response : 'No user update'
     })
 })
 const updateUserAddress = asyncHandler(async (req, res) => {
@@ -236,36 +292,52 @@ const updateUserAddress = asyncHandler(async (req, res) => {
 
 const updateCart = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    const { pid, quantity, color } = req.body
-    if (!pid || !color || !quantity) throw new Error('Missing inputs')
+    const { pid, quantity = 1, color, price, thumbnail, title } = req.body
+    if (!pid || !color) throw new Error('Missing inputs')
     const user = await User.findById(_id).select('cart')
-    const alreadyProduct = user?.cart?.find(el => el.product.toString() === pid)
+    const alreadyProduct = user?.cart?.find(el => el.product.toString() === pid && el.color === color)
     if (alreadyProduct) {
-        if (alreadyProduct.color === color) {
-            const response = await User.updateOne({ cart: { $elemMatch: alreadyProduct } }, {
-                $set: {
-                    "cart.$.quantity": quantity,
-                }
-            }, { new: true })
-            return res.status(200).json({
-                success: response ? true : false,
-                mes: response ? response : 'Some thing went wrong'
-            })
-        } else {
-            const response = await User.findByIdAndUpdate(_id, { $push: { cart: { product: pid, quantity, color } } }, { new: true })
-            return res.status(200).json({
-                success: response ? true : false,
-                mes: response ? response : 'Some thing went wrong'
-            })
-        }
-    }
-    else {
-        const response = await User.findByIdAndUpdate(_id, { $push: { cart: { product: pid, quantity, color } } }, { new: true })
+        const response = await User.updateOne({ cart: { $elemMatch: alreadyProduct } }, {
+            $set: {
+                "cart.$.quantity": quantity,
+                "cart.$.price": price,
+                "cart.$.thumbnail": thumbnail,
+                "cart.$.title": title,
+            }
+        }, { new: true })
         return res.status(200).json({
             success: response ? true : false,
-            updateUsers: response ? response : 'Some thing went wrong'
+            mes: response ? 'Updated your cart' : 'Some thing went wrong'
+        })
+    } else {
+        const response = await User.findByIdAndUpdate(_id, { $push: { cart: { product: pid, quantity, color, price, thumbnail, title } } }, { new: true })
+        return res.status(200).json({
+            success: response ? true : false,
+            mes: response ? 'Updated your cart' : 'Some thing went wrong'
         })
     }
+})
+const removeProductInCart = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    const { pid, color } = req.params
+    const user = await User.findById(_id).select('cart')
+    const alreadyProduct = user?.cart?.find(el => el.product.toString() === pid && el.color === color)
+    if (!alreadyProduct) return res.status(200).json({
+        success: true,
+        mes: 'Updated your cart'
+    })
+    const response = await User.findByIdAndUpdate(_id, { $pull: { cart: { product: pid, color } } }, { new: true })
+    return res.status(200).json({
+        success: response ? true : false,
+        mes: response ? 'Updated your cart' : 'Some thing went wrong'
+    })
+})
+const createUsers = asyncHandler(async (req, res) => {
+    const response = await User.create(users)
+    return res.status(200).json({
+        success: response ? true : false,
+        users: response ? response : 'Some thing went wrong'
+    })
 })
 module.exports = {
     register,
@@ -281,6 +353,9 @@ module.exports = {
     updateUsersByAdmin,
     updateUserAddress,
     updateCart,
-    finalRegister
+    finalRegister,
+    createUsers,
+    removeProductInCart
+
 
 } 

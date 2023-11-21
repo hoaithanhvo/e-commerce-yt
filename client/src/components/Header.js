@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import path from 'ultils/path'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from 'store/user/userSlice'
-// import withBaseComponent from 'hocs/withBaseComponent'
+import withBaseComponent from 'hocs/withBaseComponent'
 import { showCart } from 'store/app/appSlice'
 
 
@@ -76,4 +76,4 @@ const Header = ({ dispatch }) => {
     )
 }
 
-export default memo(Header)
+export default withBaseComponent(memo(Header))
