@@ -282,7 +282,7 @@ const updateUsersByAdmin = asyncHandler(async (req, res) => {
 })
 const updateUserAddress = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    if (!req.body.address) throw new Error('Missing inputs')
+    if (!req.body.address) throw new Error('Missing inputs123')
     const response = await User.findByIdAndUpdate(_id, { $push: { address: req.body.address } }, { new: true }).select('-password -role -refreshToken')
     return res.status(200).json({
         success: response ? true : false,
@@ -339,6 +339,46 @@ const createUsers = asyncHandler(async (req, res) => {
         users: response ? response : 'Some thing went wrong'
     })
 })
+const updateUserNew = asyncHandler(async (req, res) => {
+    const { email, firstname, lastname, mobile, address } = req.body;
+    console.log(email);
+    // Kiểm tra xem có thiếu thông tin không
+    if (!email || !lastname || !firstname || !mobile || !address) {
+        return res.status(400).json({
+            success: false,
+            mes: 'Missing inputs64'
+        });
+    }
+
+    try {
+        // Kiểm tra xem người dùng đã tồn tại hay chưa
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error('User does not exist');
+        }
+
+        // Cập nhật thông tin người dùng
+        user.email = email;
+        user.address = address;
+        user.firstname = firstname;
+        user.lastname = lastname;
+        user.mobile = mobile;
+
+        // Lưu thông tin người dùng đã cập nhật
+        await user.save();
+
+        return res.json({
+            success: true,
+            mes: 'User information updated successfully'
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            mes: 'Failed to update user information'
+        });
+    }
+});
+
 module.exports = {
     register,
     login,
@@ -355,7 +395,8 @@ module.exports = {
     updateCart,
     finalRegister,
     createUsers,
-    removeProductInCart
+    removeProductInCart,
+    updateUserNew
 
 
 } 
