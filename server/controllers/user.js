@@ -36,28 +36,34 @@ const register = asyncHandler(async (req, res) => {
             success: false,
             mes: 'Missing inputs'
         })
+
     const user = await User.findOne({ email })
     if (user) throw new Error('User has existed')
     else {
         const token = makeToken()
         const emailedited = btoa(email) + '@' + token
+        const username = `${firstname}_${lastname}` // Tạo username từ firstname và lastname
+
         const newUser = await User.create({
-            email: emailedited, password, firstname, lastname, mobile
+            email: emailedited, password, firstname, lastname, mobile, username // Thêm trường username vào đây
         })
+
         if (newUser) {
             const html = `<h2>Register code:</h2><br /><blockquote>${token}</blockquote>`
             await sendMail({ email, html, subject: 'Confirm register account in Digital World' })
         }
+
         setTimeout(async () => {
             await User.deleteOne({ email: emailedited })
         }, [300000])
 
         return res.json({
             success: newUser ? true : false,
-            mes: newUser ? 'Please check your email to active account' : 'Some went wrong, please try later'
+            mes: newUser ? 'Please check your email to active account' : 'Something went wrong, please try later'
         })
     }
 })
+
 const finalRegister = asyncHandler(async (req, res) => {
     // const cookie = req.cookies
     const { token } = req.params
