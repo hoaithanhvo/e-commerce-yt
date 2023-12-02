@@ -61,19 +61,36 @@ const register = asyncHandler(async (req, res) => {
     }
 })
 
+// const finalRegister = asyncHandler(async (req, res) => {
+//     // const cookie = req.cookies
+//     const { token } = req.params
+//     const notActivedEmail = await User.findOne({ email: new RegExp(`${token}$`) })
+//     if (notActivedEmail) {
+//         notActivedEmail.email = atob(notActivedEmail?.email?.split('@')[0])
+//         notActivedEmail.save()
+//     }
+//     return res.json({
+//         success: notActivedEmail ? true : false,
+//         mes: notActivedEmail ? 'Register is Successfully. Please go login.' : 'Some went wrong, please try later'
+//     })
+// })
+
 const finalRegister = asyncHandler(async (req, res) => {
     // const cookie = req.cookies
     const { token } = req.params
     const notActivedEmail = await User.findOne({ email: new RegExp(`${token}$`) })
     if (notActivedEmail) {
-        notActivedEmail.email = atob(notActivedEmail?.email?.split('@')[0])
-        notActivedEmail.save()
+        const base64EncodedEmail = notActivedEmail?.email?.split('@')[0];
+        const decodedEmail = Buffer.from(base64EncodedEmail, 'base64').toString('utf-8');
+        notActivedEmail.email = decodedEmail;
+        await notActivedEmail.save();
     }
     return res.json({
         success: notActivedEmail ? true : false,
         mes: notActivedEmail ? 'Register is Successfully. Please go login.' : 'Some went wrong, please try later'
-    })
-})
+    });
+});
+
 // Refresh token => Cấp mới access token
 // Access token => Xác thực người dùng, quân quyên người dùng
 const login = asyncHandler(async (req, res) => {
