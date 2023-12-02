@@ -18,7 +18,6 @@ const CreateProducts = () => {
     const handleCreateProduct = async (data) => {
         const invalids = validate(payload, setInvalidFields)
         if (invalids === 0) {
-            // if (data.category) data.category = categories?.find(el => el._id === data.category)?.title
             const finalPayload = { ...data, ...payload }
             console.log({ finalPayload });
             const formData = new FormData()
@@ -33,9 +32,6 @@ const CreateProducts = () => {
                 for (let image of finalPayload.images) formData.append('images', image)
             }
             const response = await apiCreateProduct(formData)
-            console.log(response);
-            console.log(finalPayload);
-
         }
     }
     const [payload, setPayload] = useState({

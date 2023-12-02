@@ -21,12 +21,10 @@ const History = () => {
 
             setOrder(response.order)
         }
-        console.log(response);
     }
     useEffect(() => {
         fetchOrder()
     }, [])
-    console.log(order);
     return (
         <div>
             <div className='flex justify-center items-center px-4'>
@@ -74,12 +72,6 @@ const History = () => {
                             <td className='text-center py-2'>{el.color}</td>
                             <td className='text-center py-2'>{el.totalRatings}</td>
                             <td className='text-center py-2'>{el?.varriants?.length || 0}</td>
-                            {/* <td className='text-center py-2'>{moment(el.createdAt).format('DD/MM/YYYY')}</td> */}
-                            {/* <td className='text-center py-2'>
-                                <span onClick={() => setEditProduct(el)} className='text-blue-500 hover:text-orange-500 inline-block hover:underline cursor-pointer px-1'><BiEdit size={20} /></span>
-                                <span onClick={() => handleDeleteProduct(el._id)} className='text-blue-500 hover:text-orange-500 inline-block hover:underline cursor-pointer px-1'><RiDeleteBin6Line size={20} /></span>
-                                <span onClick={() => setCustomizeVarriant(el)} className='text-blue-500 hover:text-orange-500 inline-block hover:underline cursor-pointer px-1'><BiCustomize size={20} /></span>
-                            </td> */}
                         </tr>
                     ))}
                 </tbody>
@@ -90,5 +82,4 @@ const History = () => {
         </div>
     )
 }
-
 export default History

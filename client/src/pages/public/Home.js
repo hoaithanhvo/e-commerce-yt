@@ -18,19 +18,12 @@ const settings = {
 const Home = () => {
     const { newProducts } = useSelector(state => state.products)
     const { categories } = useSelector(state => state.app)
-    const { isLoggedIn, current } = useSelector(state => state.user)
-
-    console.log({ isLoggedIn, current });
-
-
-    console.log("5", newProducts);
     return (
         <div className='w-full '>
             <div className='w-main m-auto flex mt-6'>
                 <div className='flex flex-col gap-5 w-[25%] flex-auto'>
                     <Sidebar />
                     <DealDaily />
-
                 </div>
                 <div className='flex flex-col gap-5 pl-5 w-[75%] flex-auto'>
                     <Banner />
@@ -46,7 +39,6 @@ const Home = () => {
                     <CustomSlider
                         products={newProducts}
                     />
-
                 </div>
             </div>
             <div className='my-8 w-main m-auto'>
@@ -70,7 +62,6 @@ const Home = () => {
                             </div>
                         </div>
                     ))}
-
                 </div>
             </div>
             <div className='my-8 w-main m-auto'>
@@ -79,5 +70,4 @@ const Home = () => {
         </div>
     )
 }
-
 export default Home
