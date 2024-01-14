@@ -103,20 +103,19 @@ const updateProducts = asyncHandler(async (req, res) => {
         success: updateProduct ? true : false,
         updateProduct: updateProduct ? updateProduct : "Cannot update product"
 
-        //vohoaithanh
+        //voho
     })
 
 })
 
-// const deleteProduct = asyncHandler(async (req, res) => {
-//     const { pid } = req.params
-//     const deleteProducts = await Product.findByIdAndDelete(pid)
-//     return res.status(200).json({
-//         success: deleteProducts ? true : false,
-//         deleteProducts: deleteProducts ? deleteProducts : "Cannot update product"
-//     })
+const deleteProduct = asyncHandler(async (req, res) => {
+    const deleteProducts = await Product.findByIdAndDelete(pid)
+    return res.status(200).json({
+        success: deleteProducts ? true : false,
+        deleteProducts: deleteProducts ? deleteProducts : "Cannot update product"
+    })
 
-// })
+})
 const ratings = asyncHandler(async (req, res) => {
     const { _id } = req.user;
     const { star, comment, pid, updatedAt } = req.body;
