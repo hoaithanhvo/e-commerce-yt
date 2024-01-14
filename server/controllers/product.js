@@ -110,7 +110,7 @@ const updateProducts = asyncHandler(async (req, res) => {
 
 const deleteProduct = asyncHandler(async (req, res) => {
     const deleteProducts = await Product.findByIdAndDelete(pid)
-    return res.status(200).json({
+    retun res.status(200).json({
         success: deleteProducts ? true : false,
         deleteProducts: deleteProducts ? deleteProducts : "Cannot update product"
     })
