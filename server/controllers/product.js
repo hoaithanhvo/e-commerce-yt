@@ -103,7 +103,7 @@ const updateProducts = asyncHandler(async (req, res) => {
         success: updateProduct ? true : false,
         updateProduct: updateProduct ? updateProduct : "Cannot update product"
 
-        //vohoaithanh
+        //voho
     })
 
 })
@@ -116,57 +116,57 @@ const deleteProduct = asyncHandler(async (req, res) => {
         deleteProducts: deleteProducts ? deleteProducts : "Cannot update product"
     })
 
-})
-const ratings = asyncHandler(async (req, res) => {
-    const { _id } = req.user;
-    const { star, comment, pid, updatedAt } = req.body;
-    if (!star || !pid) throw new Error('Missing inputs');
-    const ratingProduct = await Product.findById(pid);
-    const alreadyRating = ratingProduct?.ratings?.find(el => el.postedBy.toString() === _id);
+    // })
+    const ratings = asyncHandler(async (req, res) => {
+        const { _id } = req.user;
+        const { star, comment, pid, updatedAt } = req.body;
+        if (!star || !pid) throw new Error('Missing inputs');
+        const ratingProduct = await Product.findById(pid);
+        const alreadyRating = ratingProduct?.ratings?.find(el => el.postedBy.toString() === _id);
 
-    if (alreadyRating) {
-        // Update star & comment
-        const updatedRatings = ratingProduct.ratings.map(el => {
-            if (el.postedBy.toString() === _id) {
-                el.star = star;
-                el.comment = comment;
-                el.updatedAt = updatedAt;
-            }
-            return el;
+        if (alreadyRating) {
+            // Update star & comment
+            const updatedRatings = ratingProduct.ratings.map(el => {
+                if (el.postedBy.toString() === _id) {
+                    el.star = star;
+                    el.comment = comment;
+                    el.updatedAt = updatedAt;
+                }
+                return el;
+            });
+            ratingProduct.ratings = updatedRatings;
+        } else {
+            // Add star & comment
+            ratingProduct.ratings.push({ star, comment, postedBy: _id, updatedAt });
+        }
+
+        // Sum ratings
+        const ratingCount = ratingProduct.ratings.length;
+        const sumRatings = ratingProduct.ratings.reduce((sum, el) => sum + +el.star, 0);
+        ratingProduct.totalRatings = Math.round(sumRatings * 10 / ratingCount) / 10;
+
+        await ratingProduct.save();
+
+        return res.status(200).json({
+            success: true,
+            updatedProduct: ratingProduct,
         });
-        ratingProduct.ratings = updatedRatings;
-    } else {
-        // Add star & comment
-        ratingProduct.ratings.push({ star, comment, postedBy: _id, updatedAt });
-    }
-
-    // Sum ratings
-    const ratingCount = ratingProduct.ratings.length;
-    const sumRatings = ratingProduct.ratings.reduce((sum, el) => sum + +el.star, 0);
-    ratingProduct.totalRatings = Math.round(sumRatings * 10 / ratingCount) / 10;
-
-    await ratingProduct.save();
-
-    return res.status(200).json({
-        success: true,
-        updatedProduct: ratingProduct,
     });
-});
-const uploadImagesProduct = asyncHandler(async (req, res) => {
-    const { pid } = req.params
-    if (!req.files) throw new Error('Missing inputs')
-    const response = await Product.findByIdAndUpdate(pid, { $push: { images: { $each: req.files.map(el => el.path) } } }, { new: true })
-    return res.status(200).json({
-        success: response ? true : false,
-        updatedProduct: response ? response : 'Cannot upload images product'
+    const uploadImagesProduct = asyncHandler(async (req, res) => {
+        const { pid } = req.params
+        if (!req.files) throw new Error('Missing inputs')
+        const response = await Product.findByIdAndUpdate(pid, { $push: { images: { $each: req.files.map(el => el.path) } } }, { new: true })
+        return res.status(200).json({
+            success: response ? true : false,
+            updatedProduct: response ? response : 'Cannot upload images product'
+        })
     })
-})
-module.exports = {
-    createProduct,
-    getProduct,
-    getProducts,
-    updateProducts,
-    deleteProduct,
-    ratings,
-    uploadImagesProduct
-}
+    module.exports = {
+        createProduct,
+        getProduct,
+        getProducts,
+        updateProducts,
+        deleteProduct,
+        ratings,
+        uploadImagesProduct
+    }
